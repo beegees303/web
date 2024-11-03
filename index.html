@@ -3,14 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>현재 위치에서의 거리 계산</title>
+    <title>현재 위치에서 여러 지점까지의 거리 계산</title>
 </head>
 <body>
-    <h1>현재 위치에서의 거리</h1>
-    <button id="calculateDistance">거리 계산하기</button>
-    <p id="result"></p>
+    <h1>현재 위치에서 여러 지점까지의 거리</h1>
+    <button id="calculateDistances">거리 계산하기</button>
+    <div id="results"></div>
 
     <script>
+        // 여러 타겟 위치를 배열로 정의
+        const targetLocations = [
+            { name: "서울", lat: 37.5665, lon: 126.9780 },
+            { name: "부산", lat: 35.1796, lon: 129.0756 },
+            { name: "대전", lat: 36.3504, lon: 127.3845 },
+            { name: "서대문 자연사박물관", lat: 37.576562, lon: 126.937796}
+        ];
+
         function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
             const R = 6371; // 지구의 반경 (km)
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -23,23 +31,27 @@
             return R * c; // 거리 (km)
         }
 
-        document.getElementById('calculateDistance').addEventListener('click', function() {
+        document.getElementById('calculateDistances').addEventListener('click', function() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const currentLat = position.coords.latitude;
                     const currentLon = position.coords.longitude;
-                    const targetLat = 37.576562;
-                    const targetLon = 126.937796;
-
-                    const distance = calculateHaversineDistance(currentLat, currentLon, targetLat, targetLon);
                     
-                    document.getElementById('result').innerHTML = 
-                        `서대문 자연사 박물관 : ${distance.toFixed(2)} km`;
+                    let resultsHTML = `<h2>현재 위치: (${currentLat.toFixed(6)}, ${currentLon.toFixed(6)})</h2>`;
+                    resultsHTML += "<ul>";
+
+                    targetLocations.forEach(target => {
+                        const distance = calculateHaversineDistance(currentLat, currentLon, target.lat, target.lon);
+                        resultsHTML += `<li>${target.name}: ${distance.toFixed(2)} km</li>`;
+                    });
+
+                    resultsHTML += "</ul>";
+                    document.getElementById('results').innerHTML = resultsHTML;
                 }, function(error) {
-                    document.getElementById('result').innerHTML = "위치 정보를 가져올 수 없습니다: " + error.message;
+                    document.getElementById('results').innerHTML = "위치 정보를 가져올 수 없습니다: " + error.message;
                 });
             } else {
-                document.getElementById('result').innerHTML = "이 브라우저에서는 Geolocation이 지원되지 않습니다.";
+                document.getElementById('results').innerHTML = "이 브라우저에서는 Geolocation이 지원되지 않습니다.";
             }
         });
     </script>
