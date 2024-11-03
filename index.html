@@ -9,6 +9,7 @@
     <!--
     <h1>현재 위치에서 여러 지점까지의 거리 (가까운 순)</h1>
     -->
+    <h1>가볼 곳들 </h1>
     
     <button id="calculateDistances">거리 계산하기</button>
     <div id="results"></div>
@@ -41,7 +42,7 @@
                     const currentLat = position.coords.latitude;
                     const currentLon = position.coords.longitude;
                     
-                    let resultsHTML = `<h2>현재 위치: (${currentLat.toFixed(6)}, ${currentLon.toFixed(6)})</h2>`;
+                    //let resultsHTML = `<h2>현재 위치: (${currentLat.toFixed(6)}, ${currentLon.toFixed(6)})</h2>`;
                     resultsHTML += "<ol>"; // 순서 있는 목록 사용
 
                     // 거리 계산 및 정렬
