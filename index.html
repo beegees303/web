@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>현재 위치에서 여러 지점까지의 거리 계산</title>
+    <title>현재 위치에서 여러 지점까지의 거리 계산 (정렬)</title>
 </head>
 <body>
-    <h1>현재 위치에서 여러 지점까지의 거리</h1>
+    <h1>현재 위치에서 여러 지점까지의 거리 (가까운 순)</h1>
     <button id="calculateDistances">거리 계산하기</button>
     <div id="results"></div>
 
@@ -16,7 +16,8 @@
             { name: "서울", lat: 37.5665, lon: 126.9780 },
             { name: "부산", lat: 35.1796, lon: 129.0756 },
             { name: "대전", lat: 36.3504, lon: 127.3845 },
-            { name: "서대문 자연사박물관", lat: 37.576562, lon: 126.937796}
+            { name: "광주", lat: 35.1601, lon: 126.8515 },
+         { name: "서대문 자연사박물관", lat: 37.576562, lon: 126.937796}
         ];
 
         function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
@@ -38,14 +39,20 @@
                     const currentLon = position.coords.longitude;
                     
                     let resultsHTML = `<h2>현재 위치: (${currentLat.toFixed(6)}, ${currentLon.toFixed(6)})</h2>`;
-                    resultsHTML += "<ul>";
+                    resultsHTML += "<ol>"; // 순서 있는 목록 사용
 
-                    targetLocations.forEach(target => {
+                    // 거리 계산 및 정렬
+                    const sortedLocations = targetLocations.map(target => {
                         const distance = calculateHaversineDistance(currentLat, currentLon, target.lat, target.lon);
-                        resultsHTML += `<li>${target.name}: ${distance.toFixed(2)} km</li>`;
+                        return { ...target, distance };
+                    }).sort((a, b) => a.distance - b.distance);
+
+                    // 정렬된 목록 표시
+                    sortedLocations.forEach(location => {
+                        resultsHTML += `<li>${location.name}: ${location.distance.toFixed(2)} km</li>`;
                     });
 
-                    resultsHTML += "</ul>";
+                    resultsHTML += "</ol>";
                     document.getElementById('results').innerHTML = resultsHTML;
                 }, function(error) {
                     document.getElementById('results').innerHTML = "위치 정보를 가져올 수 없습니다: " + error.message;
