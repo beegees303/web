@@ -34,8 +34,7 @@
                     const distance = calculateHaversineDistance(currentLat, currentLon, targetLat, targetLon);
                     
                     document.getElementById('result').innerHTML = 
-                        `현재 위치 (${currentLat.toFixed(6)}, ${currentLon.toFixed(6)})에서 ` +
-                        `목표 지점 (37.576562, 126.937796)까지의 거리: ${distance.toFixed(2)} km`;
+                        `서대문 자연사 박물관 : ${distance.toFixed(2)} km`;
                 }, function(error) {
                     document.getElementById('result').innerHTML = "위치 정보를 가져올 수 없습니다: " + error.message;
                 });
