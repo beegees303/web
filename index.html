@@ -1,15 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>현재 위치 표시</title>
-    <link rel="stylesheet" href="style.css">
+    <title>현재 위치에서의 거리 계산</title>
 </head>
 <body>
-    <h1>현재 위치</h1>
-    <button id="getLocation">위치 가져오기</button>
-    <p id="location"></p>
-    <script src="script.js"></script>
+    <h1>현재 위치에서의 거리</h1>
+    <button id="calculateDistance">거리 계산하기</button>
+    <p id="result"></p>
+
+    <script>
+        function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // 지구의 반경 (km)
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // 거리 (km)
+        }
+
+        document.getElementById('calculateDistance').addEventListener('click', function() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const currentLat = position.coords.latitude;
+                    const currentLon = position.coords.longitude;
+                    const targetLat = 37.576562;
+                    const targetLon = 126.937796;
+
+                    const distance = calculateHaversineDistance(currentLat, currentLon, targetLat, targetLon);
+                    
+                    document.getElementById('result').innerHTML = 
+                        `현재 위치 (${currentLat.toFixed(6)}, ${currentLon.toFixed(6)})에서 ` +
+                        `목표 지점 (37.576562, 126.937796)까지의 거리: ${distance.toFixed(2)} km`;
+                }, function(error) {
+                    document.getElementById('result').innerHTML = "위치 정보를 가져올 수 없습니다: " + error.message;
+                });
+            } else {
+                document.getElementById('result').innerHTML = "이 브라우저에서는 Geolocation이 지원되지 않습니다.";
+            }
+        });
+    </script>
 </body>
 </html>
