@@ -1,0 +1,24 @@
+<script>
+const https = require('https');
+
+const url = 'https://prod.danawa.com/info/?pcode=69868673&cate=22254631';
+
+https.get(url, (res) => {
+  let data = '';
+
+  // 데이터가 들어올 때마다 실행
+  res.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  // 데이터 수신 완료
+  res.on('end', () => {
+    console.log(data); // 전체 HTML 소스 출력
+  });
+
+}).on('error', (err) => {
+  console.error('Error fetching the page:', err.message);
+});
+
+
+</script>
