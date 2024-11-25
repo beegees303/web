@@ -14,6 +14,7 @@ https.get(url, (res) => {
   // 데이터 수신 완료
   res.on('end', () => {
     console.log(data); // 전체 HTML 소스 출력
+    alert(data);
   });
 
 }).on('error', (err) => {
