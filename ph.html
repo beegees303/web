@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가볼 곳들</title>
+</head>
+    
+<body>
+    <!--
+    <h1>현재 위치에서 여러 지점까지의 거리 (가까운 순)</h1>
+    -->
+    <h1>가볼 곳들 </h1>
+    
+    <button id="calculateDistances">거리 계산하기</button>
+    <div id="results"></div>
+
+    <script>
+
+navigator.geolocation.getCurrentPosition(position => {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+
+  // 2단계: 기압 데이터 가져오기 함수 호출
+  getPressure(lat, lon);
+}, error => {
+  console.error('위치정보 획득 실패', error);
+});
+
+function getPressure(lat, lon) {
+  const apiKey = '826a87be34ef4625d230f52962e69077'; // API 키 필요
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const pressure = data.main.pressure; // 기압 (hPa)
+      console.log('현재 기압:', pressure);
+alert(pressure);
+    })
+    .catch(err => console.error('기압 데이터 요청 실패', err));
+}
+
+
+    </script>
+</body>
+</html>
