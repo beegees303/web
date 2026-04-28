@@ -24,12 +24,12 @@
     
     <div class="form-group">
         <label for="due">만료일 (due)</label>
-        <input type="date" id="due" required>
+        <input type="date" id="due">
     </div>
 
     <div class="form-group">
-        <label for="gallery">갤러리명 (gallery)</label>
-        <input type="text" id="gallery" placeholder="예: 스타벅스, 기프티콘 등">
+        <label for="gallery">갤러리 (gallery)</label>
+        <input type="date" id="gallery">
     </div>
 
     <div class="form-group">
@@ -39,28 +39,27 @@
 
     <button onclick="insertCoupon()">데이터 추가하기</button>
     
-    <a href="aa.html" class="link-btn">목록으로 돌아가기</a>
+    <a href="https://beegees303.github.io/web/coupon.html" class="link-btn">목록으로 돌아가기</a>
 </div>
 
 <script>
-    // Supabase 설정
     const SUPABASE_URL = 'https://ucamlrcljnyxrhokveiw.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYW1scmNsam55eHJob2t2ZWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNDkyMDYsImV4cCI6MjA5MjkyNTIwNn0.N3OCwQCEXcItxufxND64bps6Qycy9ahnp_gmTw_fN84';
     
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function insertCoupon() {
-        const due = document.getElementById('due').value;
-        const gallery = document.getElementById('gallery').value;
-        const ir = document.getElementById('ir').value;
+        // 입력 값 가져오기
+        const dueVal = document.getElementById('due').value;
+        const galleryVal = document.getElementById('gallery').value;
+        const irVal = document.getElementById('ir').value;
 
-        if (!due || !gallery || !ir) {
-            alert("모든 항목을 입력해주세요.");
-            return;
-        }
+        // 필수 체크 해제 및 빈 값 처리 (빈 문자열이면 null로 할당)
+        const due = dueVal === "" ? null : dueVal;
+        const gallery = galleryVal === "" ? null : galleryVal;
+        const ir = irVal === "" ? null : irVal;
 
         try {
-            // 데이터 삽입
             const { data, error } = await client
                 .from('coupon')
                 .insert([
