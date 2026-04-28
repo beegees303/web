@@ -63,7 +63,7 @@
             const { data, error } = await client
                 .from('coupon')
                 .insert([
-                    { due: due, gallery: gallery, ir: ir }
+                    { due: due, gallary: gallary, ir: ir }
                 ]);
 
             if (error) throw error;
