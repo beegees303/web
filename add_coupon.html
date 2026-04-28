@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쿠폰 데이터 입력</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; padding: 20px; background-color: #f8f9fa; display: flex; justify-content: center; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h1 { font-size: 1.5rem; color: #333; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+        .link-btn { display: block; text-align: center; margin-top: 15px; color: #007bff; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎫 새 쿠폰 등록</h1>
+    
+    <div class="form-group">
+        <label for="due">만료일 (due)</label>
+        <input type="date" id="due" required>
+    </div>
+
+    <div class="form-group">
+        <label for="gallery">갤러리명 (gallery)</label>
+        <input type="text" id="gallery" placeholder="예: 스타벅스, 기프티콘 등">
+    </div>
+
+    <div class="form-group">
+        <label for="ir">내용 (IR)</label>
+        <input type="text" id="ir" placeholder="쿠폰 번호나 상세 내용">
+    </div>
+
+    <button onclick="insertCoupon()">데이터 추가하기</button>
+    
+    <a href="aa.html" class="link-btn">목록으로 돌아가기</a>
+</div>
+
+<script>
+    // Supabase 설정
+    const SUPABASE_URL = 'https://ucamlrcljnyxrhokveiw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYW1scmNsam55eHJob2t2ZWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNDkyMDYsImV4cCI6MjA5MjkyNTIwNn0.N3OCwQCEXcItxufxND64bps6Qycy9ahnp_gmTw_fN84';
+    
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function insertCoupon() {
+        const due = document.getElementById('due').value;
+        const gallery = document.getElementById('gallery').value;
+        const ir = document.getElementById('ir').value;
+
+        if (!due || !gallery || !ir) {
+            alert("모든 항목을 입력해주세요.");
+            return;
+        }
+
+        try {
+            // 데이터 삽입
+            const { data, error } = await client
+                .from('coupon')
+                .insert([
+                    { due: due, gallery: gallery, IR: ir }
+                ]);
+
+            if (error) throw error;
+
+            alert("쿠폰이 성공적으로 등록되었습니다!");
+            
+            // 입력 필드 초기화
+            document.getElementById('due').value = '';
+            document.getElementById('gallery').value = '';
+            document.getElementById('ir').value = '';
+
+        } catch (err) {
+            alert("등록 실패: " + err.message);
+            console.error(err);
+        }
+    }
+</script>
+
+</body>
+</html>
