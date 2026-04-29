@@ -3,128 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부조금 합산 내역</title>
+    <title>부조금 관리 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Pretendard', -apple-system, sans-serif; padding: 20px; line-height: 1.6; background-color: #f8f9fa; }
-        h1 { color: #333; margin-bottom: 20px; }
+        h1 { color: #333; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
         
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         th, td { border: 1px solid #eee; padding: 14px; text-align: center; }
-        th { background-color: #495057; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
+        th { background-color: #495057; color: white; font-weight: 600; font-size: 0.9rem; }
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #f1f7ff; }
         
+        /* 성함 클릭 스타일 */
+        .clickable-name { color: #007bff; text-decoration: underline; cursor: pointer; font-weight: bold; }
         .money-cell { font-weight: bold; color: #2c3e50; text-align: right; padding-right: 30px; }
-        .count-tag { font-size: 0.8rem; color: #666; margin-left: 5px; font-weight: normal; }
+        
+        .btn-back { padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .loading { color: #666; font-size: 1.1rem; margin-top: 20px; }
-        .error { color: #d9534f; font-weight: bold; }
         
         .nav-area { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px; }
         .nav-link { color: #007bff; text-decoration: none; font-weight: bold; }
-        .nav-link:hover { text-decoration: underline; }
+        
+        #detail-view { display: none; } /* 처음에는 상세 보기 숨김 */
     </style>
 </head>
 <body>
 
-    <h1>🧧 부조금 합산 목록 (성함순)</h1>
-    <div id="status" class="loading">데이터를 집계 중입니다...</div>
-    
-    <table id="buzo-table" style="display:none;">
-        <thead>
-            <tr>
-                <th>성함</th>
-                <th>총 금액</th>
-                <th>비고 (최근 내역)</th>
-                <th>최근 날짜</th>
-            </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-    </table>
+    <div id="main-view">
+        <h1>🧧 부조금 합산 목록</h1>
+        <div id="main-status" class="loading">데이터를 집계 중입니다...</div>
+        <table id="main-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>성함 (클릭 시 상세)</th>
+                    <th>총 합계 금액</th>
+                </tr>
+            </thead>
+            <tbody id="main-body"></tbody>
+        </table>
+        <div class="nav-area">
+            <a href="https://beegees303.github.io/web/add_buzo.html" class="nav-link">➕ 새 내역 추가하기</a>
+        </div>
+    </div>
 
-    <div class="nav-area">
-        <a href="https://beegees303.github.io/web/add_buzo.html" class="nav-link">➕ 새 내역 추가하기</a>
+    <div id="detail-view">
+        <h1>
+            <span id="detail-title"></span>
+            <button class="btn-back" onclick="showMain()">⬅ 뒤로가기</button>
+        </h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th>금액</th>
+                    <th>내역</th>
+                </tr>
+            </thead>
+            <tbody id="detail-body"></tbody>
+        </table>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://ucamlrcljnyxrhokveiw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYW1scmNsam55eHJob2t2ZWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNDkyMDYsImV4cCI6MjA5MjkyNTIwNn0.N3OCwQCEXcItxufxND64bps6Qycy9ahnp_gmTw_fN84';
-        
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let allData = []; // 전체 데이터를 담을 변수
 
         function formatNumber(num) {
             return Number(num).toLocaleString();
         }
 
-        async function loadBuzoData() {
-            const statusEl = document.getElementById('status');
-            const tableEl = document.getElementById('buzo-table');
-            const bodyEl = document.getElementById('table-body');
+        // 메인 화면 보이기
+        function showMain() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('main-view').style.display = 'block';
+        }
+
+        // 상세 화면 보이기
+        function showDetail(name) {
+            const detailTitle = document.getElementById('detail-title');
+            const detailBody = document.getElementById('detail-body');
+            
+            detailTitle.innerText = `🧧 ${name} 님 내역`;
+            detailBody.innerHTML = ''; // 기존 내용 초기화
+
+            // 해당 성함의 데이터만 필터링
+            const filtered = allData.filter(item => item.who === name);
+            
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.date || '-'}</td>
+                    <td class="money-cell">${formatNumber(item.money || 0)}원</td>
+                    <td>${item.what || '-'}</td>
+                `;
+                detailBody.appendChild(tr);
+            });
+
+            document.getElementById('main-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+        }
+
+        async function init() {
+            const mainStatus = document.getElementById('main-status');
+            const mainTable = document.getElementById('main-table');
+            const mainBody = document.getElementById('main-body');
 
             try {
-                // 전체 데이터를 가져옵니다.
                 const { data, error } = await client
                     .from('buzo')
                     .select('date, who, money, what')
-                    .order('date', { ascending: false }); // 날짜순으로 먼저 가져와서 합칠 때 최신날짜를 유지
+                    .order('date', { ascending: false });
 
                 if (error) throw error;
-                if (!data || data.length === 0) {
-                    statusEl.innerText = "표시할 내역이 없습니다.";
-                    return;
-                }
+                allData = data; // 전역 변수에 저장
 
-                // --- 데이터 합산 로직 (성함 기준) ---
+                // 성함별 합산 로직
                 const aggregated = data.reduce((acc, current) => {
                     const name = current.who || '미기입';
                     if (!acc[name]) {
-                        acc[name] = {
-                            who: name,
-                            totalMoney: 0,
-                            latestDate: current.date,
-                            whats: [],
-                            count: 0
-                        };
+                        acc[name] = { who: name, totalMoney: 0 };
                     }
                     acc[name].totalMoney += Number(current.money || 0);
-                    acc[name].count += 1;
-                    if (current.what) acc[name].whats.push(current.what);
                     return acc;
                 }, {});
 
-                // 객체를 배열로 변환 후 이름순 정렬
+                // 성함순 정렬
                 const sortedList = Object.values(aggregated).sort((a, b) => a.who.localeCompare(b.who));
 
-                // 테이블 행 생성
                 sortedList.forEach(item => {
                     const tr = document.createElement('tr');
-                    
-                    // 내역이 여러개일 경우 쉼표로 연결하여 표시
-                    const whatDisplay = [...new Set(item.whats)].join(', ');
-
                     tr.innerHTML = `
-                        <td style="font-weight:bold;">
-                            ${item.who}
-                            ${item.count > 1 ? `<span class="count-tag">(${item.count}건)</span>` : ''}
-                        </td>
+                        <td class="clickable-name" onclick="showDetail('${item.who}')">${item.who}</td>
                         <td class="money-cell">${formatNumber(item.totalMoney)}원</td>
-                        <td style="font-size: 0.9rem; color: #666;">${whatDisplay || '-'}</td>
-                        <td>${item.latestDate || '-'}</td>
                     `;
-                    
-                    bodyEl.appendChild(tr);
+                    mainBody.appendChild(tr);
                 });
 
-                statusEl.style.display = 'none';
-                tableEl.style.display = 'table';
+                mainStatus.style.display = 'none';
+                mainTable.style.display = 'table';
 
             } catch (err) {
-                statusEl.className = 'error';
-                statusEl.innerText = "오류 발생: " + err.message;
+                mainStatus.innerText = "오류 발생: " + err.message;
             }
         }
 
-        loadBuzoData();
+        init();
     </script>
 </body>
 </html>
