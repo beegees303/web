@@ -9,20 +9,16 @@
         body { font-family: 'Pretendard', -apple-system, sans-serif; padding: 20px; line-height: 1.6; background-color: #f8f9fa; }
         h1 { color: #333; margin-bottom: 20px; }
         
-        /* 테이블 스타일 */
         table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         th, td { border: 1px solid #eee; padding: 14px; text-align: center; }
         th { background-color: #495057; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #f1f7ff; }
         
-        /* 금액 강조 스타일 */
         .money-cell { font-weight: bold; color: #2c3e50; text-align: right; padding-right: 30px; }
-        
         .loading { color: #666; font-size: 1.1rem; margin-top: 20px; }
         .error { color: #d9534f; font-weight: bold; }
         
-        /* 하단 링크 스타일 */
         .nav-area { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px; }
         .nav-link { color: #007bff; text-decoration: none; font-weight: bold; }
         .nav-link:hover { text-decoration: underline; }
@@ -30,16 +26,16 @@
 </head>
 <body>
 
-    <h1>🧧 부조금 내역 일람</h1>
+    <h1>🧧 부조금 내역 일람 (성함순)</h1>
     <div id="status" class="loading">데이터를 불러오는 중입니다...</div>
     
     <table id="buzo-table" style="display:none;">
         <thead>
             <tr>
-                <th>날짜</th>
                 <th>성함</th>
                 <th>금액</th>
                 <th>내역</th>
+                <th>날짜</th>
             </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -50,13 +46,11 @@
     </div>
 
     <script>
-        // Supabase 설정
         const SUPABASE_URL = 'https://ucamlrcljnyxrhokveiw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYW1scmNsam55eHJob2t2ZWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNDkyMDYsImV4cCI6MjA5MjkyNTIwNn0.N3OCwQCEXcItxufxND64bps6Qycy9ahnp_gmTw_fN84';
         
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 숫자 세 자릿수마다 콤마 추가
         function formatNumber(num) {
             return Number(num).toLocaleString();
         }
@@ -67,11 +61,11 @@
             const bodyEl = document.getElementById('table-body');
 
             try {
-                // 'data' 대신 'date'로 컬럼명 수정하여 데이터 호출
+                // 'who' 컬럼을 기준으로 오름차순(가나다순) 정렬
                 const { data, error } = await client
                     .from('buzo')
                     .select('date, who, money, what')
-                    .order('date', { ascending: false });
+                    .order('who', { ascending: true });
 
                 if (error) throw error;
 
@@ -80,16 +74,14 @@
                     return;
                 }
 
-                // 테이블 행 생성
                 data.forEach(item => {
                     const tr = document.createElement('tr');
                     
-                    // item.data 대신 item.date 사용
                     tr.innerHTML = `
-                        <td>${item.date || '-'}</td>
-                        <td>${item.who || '-'}</td>
+                        <td style="font-weight:bold;">${item.who || '-'}</td>
                         <td class="money-cell">${formatNumber(item.money || 0)}원</td>
                         <td>${item.what || '-'}</td>
+                        <td>${item.date || '-'}</td>
                     `;
                     
                     bodyEl.appendChild(tr);
