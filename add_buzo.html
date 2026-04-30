@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부조금 데이터 입력</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; padding: 20px; background-color: #f8f9fa; display: flex; justify-content: center; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h1 { font-size: 1.5rem; color: #333; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .link-btn { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 0.9rem; }
+        .link-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧧 새 부조금 등록</h1>
+    
+    <div class="form-group">
+        <label for="date">날짜 (date)</label>
+        <input type="date" id="date">
+    </div>
+
+    <div class="form-group">
+        <label for="who">성함 (who)</label>
+        <input type="text" id="who" placeholder="보내신 분 성함">
+    </div>
+
+    <div class="form-group">
+        <label for="money">금액 (money)</label>
+        <input type="number" id="money" placeholder="숫자만 입력 (예: 50000)">
+    </div>
+
+    <div class="form-group">
+        <label for="what">내역 (what)</label>
+        <input type="text" id="what" placeholder="예: 결혼, 조의, 개업 등">
+    </div>
+
+    <button onclick="insertBuzo()">데이터 추가하기</button>
+    
+    <a href="https://beegees303.github.io/web/buzo.html" class="link-btn">목록으로 돌아가기</a>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://ucamlrcljnyxrhokveiw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYW1scmNsam55eHJob2t2ZWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNDkyMDYsImV4cCI6MjA5MjkyNTIwNn0.N3OCwQCEXcItxufxND64bps6Qycy9ahnp_gmTw_fN84';
+    
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 오늘 날짜를 기본값으로 설정
+    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+
+    async function insertBuzo() {
+        // 입력 값 가져오기
+        const dateVal = document.getElementById('date').value;
+        const whoVal = document.getElementById('who').value;
+        const moneyVal = document.getElementById('money').value;
+        const whatVal = document.getElementById('what').value;
+
+        // 유효성 체크
+        if (!whoVal || !moneyVal) {
+            alert("성함과 금액은 필수 입력 항목입니다.");
+            return;
+        }
+
+        try {
+            const { data, error } = await client
+                .from('buzo')
+                .insert([
+                    { 
+                        date: dateVal === "" ? null : dateVal, 
+                        who: whoVal, 
+                        money: parseInt(moneyVal), // 숫자로 변환
+                        what: whatVal === "" ? null : whatVal 
+                    }
+                ]);
+
+            if (error) throw error;
+
+            alert("내역이 성공적으로 등록되었습니다!");
+            
+            // 입력 필드 초기화 (날짜 제외)
+            document.getElementById('who').value = '';
+            document.getElementById('money').value = '';
+            document.getElementById('what').value = '';
+
+        } catch (err) {
+            alert("등록 실패: " + err.message);
+            console.error(err);
+        }
+    }
+</script>
+
+</body>
+</html>
