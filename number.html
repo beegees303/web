@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>금액 한글 변환기</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 350px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 18px;
+            font-weight: 600;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: #6c63ff; outline: none; }
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #333;
+            min-height: 24px;
+        }
+        button {
+            margin-top: 15px;
+            background: #6c63ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        button:hover { background: #5750d8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3>금액 한글 변환기</h3>
+    <!-- 텍스트 타입으로 변경하여 콤마 표시 지원 -->
+    <input type="text" id="numInput" placeholder="숫자를 입력하세요" oninput="formatAndConvert(this)">
+    <div class="result-box" id="resultLabel">금액이 여기에 표시됩니다</div>
+    <button onclick="copyText()">복사하기</button>
+</div>
+
+<script>
+    // 콤마 추가 및 숫자만 추출
+    function formatAndConvert(input) {
+        let value = input.value.replace(/[^0-9]/g, ''); // 숫자 제외 모두 제거
+        input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 콤마 추가
+        
+        document.getElementById('resultLabel').innerText = numberToKorean(value);
+    }
+
+    function numberToKorean(numStr) {
+        if (!numStr) return "금액이 여기에 표시됩니다";
+        
+        const units = ["", "만", "억", "조", "경"];
+        const digits = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
+        const scales = ["", "십", "백", "천"];
+        
+        let result = "";
+        let unitIdx = 0;
+        let num = parseInt(numStr);
+
+        for (let i = numStr.length; i > 0; i -= 4) {
+            let part = numStr.slice(Math.max(0, i - 4), i);
+            let partStr = "";
+            for (let j = 0; j < part.length; j++) {
+                let digit = parseInt(part[j]);
+                if (digit > 0) {
+                    partStr += digits[digit] + scales[part.length - 1 - j];
+                }
+            }
+            if (partStr !== "") result = partStr + units[unitIdx] + result;
+            unitIdx++;
+        }
+        return "금" + result + "원";
+    }
+
+    function copyText() {
+        const text = document.getElementById('resultLabel').innerText;
+        if(text.includes("금액이")) return;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("복사되었습니다: " + text);
+        });
+    }
+</script>
+
+</body>
+</html>
